@@ -39,19 +39,21 @@ local function get_git_commits_for_current_file(file)
     return log
 end
 
-local function show_commit_message(buffer_info)
+local function commit_message(commit)
     return function ()
         local message = Job:new({
             command = 'git',
-            args = { '-C', get_git_root(), 'show', '--compact-summary', buffer_info.commit }
+            args = { '-C', get_git_root(), 'show', '--compact-summary', commit }
         }):sync()
 
         local buffer = vim.api.nvim_create_buf(false, true)
-        vim.keymap.set('n', config.keymap.quit, vim.api.nvim_buf_delete, { buffer = buffer })
+        vim.keymap.set('n', config.keymap.quit, function() vim.api.nvim_buf_delete(0, { force = true }) end, { buffer = buffer })
         vim.api.nvim_buf_set_lines(buffer, 0, -1, false, message)
         vim.api.nvim_buf_set_option(buffer, 'filetype', 'gitcommit')
         vim.api.nvim_buf_set_option(buffer, 'readonly', true)
-        vim.api.nvim_open_win(buffer, true, { relative = 'win', width = 100, height = #message, bufpos = {10, 10} })
+
+        local current_pos = vim.api.nvim_win_get_cursor(0)
+        vim.api.nvim_open_win(buffer, true, { relative = 'win', width = 100, height = #message, bufpos = current_pos })
     end
 end
 
@@ -74,8 +76,9 @@ end
 local function setup_keymap(buffers)
     for i, buffer_info in ipairs(buffers) do
         local buffer = buffer_info.fd
+        local commit = buffer_info.commit
         vim.keymap.set('n', config.keymap.quit, exit_all(buffers), { buffer = buffer })
-        vim.keymap.set('n', config.keymap.commit_message, show_commit_message(buffers), { buffer = buffer })
+        vim.keymap.set('n', config.keymap.commit_message, commit_message(commit), { buffer = buffer })
 
         if i > 1 then
             vim.keymap.set('n', config.keymap.prev, goto_buffer(buffers, i - 1), { buffer = buffer })
