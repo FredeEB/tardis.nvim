@@ -39,6 +39,10 @@ local function get_git_commits_for_current_file(file)
     return log
 end
 
+local function force_delete_buffer(buffer)
+    return function() vim.api.nvim_buf_delete(buffer, { force = true }) end
+end
+
 local function commit_message(commit)
     return function ()
         local message = Job:new({
@@ -47,7 +51,7 @@ local function commit_message(commit)
         }):sync()
 
         local buffer = vim.api.nvim_create_buf(false, true)
-        vim.keymap.set('n', config.keymap.quit, function() vim.api.nvim_buf_delete(0, { force = true }) end, { buffer = buffer })
+        vim.keymap.set('n', config.keymap.quit, force_delete_buffer(0), { buffer = buffer })
         vim.api.nvim_buf_set_lines(buffer, 0, -1, false, message)
         vim.api.nvim_buf_set_option(buffer, 'filetype', 'gitcommit')
         vim.api.nvim_buf_set_option(buffer, 'readonly', true)
@@ -68,7 +72,7 @@ end
 local function exit_all(buffers)
     return function()
         for _, buffer in ipairs(buffers) do
-            vim.api.nvim_buf_delete(buffer.fd, { force = true })
+            force_delete_buffer(buffer.fd)()
         end
     end
 end
