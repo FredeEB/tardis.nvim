@@ -63,8 +63,13 @@ end
 
 local function goto_buffer(buffers, index)
     return function()
+        local target = buffers[index].fd
         local current_pos = vim.api.nvim_win_get_cursor(0)
-        vim.api.nvim_win_set_buf(0, buffers[index].fd)
+        local target_line_count = vim.api.nvim_buf_line_count(target)
+        if current_pos[1] >= target_line_count then
+            current_pos[1] = target_line_count
+        end
+        vim.api.nvim_win_set_buf(0, target)
         vim.api.nvim_win_set_cursor(0, current_pos)
     end
 end
