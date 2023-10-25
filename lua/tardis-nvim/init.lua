@@ -119,7 +119,7 @@ local function tardis()
         vim.api.nvim_buf_set_lines(buffer, 0, -1, false, file_at_commit)
         vim.api.nvim_buf_set_option(buffer, 'filetype', filetype)
         vim.api.nvim_buf_set_option(buffer, 'readonly', true)
-        vim.api.nvim_buf_set_name(buffer, commit)
+        vim.api.nvim_buf_set_name(buffer, "Tardis: " .. commit)
     end
     setup_keymap(buffers)
 
