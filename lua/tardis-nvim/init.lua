@@ -1,5 +1,9 @@
 local Job = require('plenary.job')
 
+local constants = {
+    name_prefix = "Tardis: "
+}
+
 local config = {
     keymap = {
         next = '<C-j>',
@@ -55,6 +59,7 @@ local function commit_message(commit)
         vim.api.nvim_buf_set_lines(buffer, 0, -1, false, message)
         vim.api.nvim_buf_set_option(buffer, 'filetype', 'gitcommit')
         vim.api.nvim_buf_set_option(buffer, 'readonly', true)
+        vim.api.nvim_buf_set_name(buffer, constants.name_prefix .. 'message')
 
         local current_pos = vim.api.nvim_win_get_cursor(0)
         vim.api.nvim_open_win(buffer, true, { relative = 'win', width = 100, height = #message, bufpos = current_pos })
@@ -74,19 +79,15 @@ local function goto_buffer(buffers, index)
     end
 end
 
-local function exit_all(buffers)
-    return function()
-        for _, buffer in ipairs(buffers) do
-            force_delete_buffer(buffer.fd)()
-        end
-    end
+local function is_tardis_buffer(buffer)
+    return string.match(vim.api.nvim_buf_get_name(buffer), constants.name_prefix) ~= nil
 end
 
-local function setup_keymap(buffers)
+local function setup_keymap(origin, buffers)
     for i, buffer_info in ipairs(buffers) do
         local buffer = buffer_info.fd
         local commit = buffer_info.commit
-        vim.keymap.set('n', config.keymap.quit, exit_all(buffers), { buffer = buffer })
+        vim.keymap.set('n', config.keymap.quit, force_delete_buffer(0), { buffer = buffer })
         vim.keymap.set('n', config.keymap.commit_message, commit_message(commit), { buffer = buffer })
 
         if i > 1 then
@@ -100,6 +101,27 @@ local function setup_keymap(buffers)
             vim.keymap.set('n', config.keymap.next, '<Nop>', { buffer = buffer })
         end
     end
+end
+
+local function setup_autocmds(origin, buffers)
+    local group = vim.api.nvim_create_augroup('Tardis', {})
+    for _, buffer in ipairs(buffers) do
+        vim.api.nvim_create_autocmd({'BufUnload'}, {
+            group = group,
+            callback = function()
+                vim.api.nvim_del_augroup_by_id(group)
+                local current_buffer = vim.api.nvim_get_current_buf()
+                vim.api.nvim_win_set_buf(0, origin)
+                for _, buffer_info in ipairs(buffers) do
+                    if is_tardis_buffer(buffer_info.fd) and buffer_info.fd ~= current_buffer then
+                        force_delete_buffer(buffer_info.fd)()
+                    end
+                end
+            end,
+            buffer = buffer.fd,
+        })
+    end
+    return group
 end
 
 local function tardis()
@@ -119,9 +141,11 @@ local function tardis()
         vim.api.nvim_buf_set_lines(buffer, 0, -1, false, file_at_commit)
         vim.api.nvim_buf_set_option(buffer, 'filetype', filetype)
         vim.api.nvim_buf_set_option(buffer, 'readonly', true)
-        vim.api.nvim_buf_set_name(buffer, "Tardis: " .. commit)
+        vim.api.nvim_buf_set_name(buffer, constants.name_prefix .. commit)
     end
-    setup_keymap(buffers)
+    local origin = vim.api.nvim_get_current_buf()
+    setup_autocmds(origin, buffers)
+    setup_keymap(origin, buffers)
 
     goto_buffer(buffers, 1)()
 end
