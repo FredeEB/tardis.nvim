@@ -2,8 +2,8 @@ local Job = require('plenary.job')
 
 local config = {
     keymap = {
-        next = 'n',
-        prev = 'p',
+        next = '<C-j>',
+        prev = '<C-k>',
         quit = 'q',
         commit_message = 'm',
     },

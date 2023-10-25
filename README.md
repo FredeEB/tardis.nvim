@@ -17,8 +17,8 @@ The default options are
 ```lua
 require('tardis-nvim').setup {
     keymap = {
-        next = 'n',           -- next entry in log (older)
-        prev = 'p',           -- previous entry in log (newer)
+        next = '<C-j>',       -- next entry in log (older)
+        prev = '<C-k>',       -- previous entry in log (newer)
         quit = 'q',           -- quit all
         commit_message = 'm', -- show commit message for current commit in buffer
     },
