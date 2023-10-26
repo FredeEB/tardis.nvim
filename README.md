@@ -9,10 +9,14 @@ Inspired by ![git-timemachine](https://github.com/emacsmirror/git-timemachine) w
 Like with any other
 
 ```lua
-{ 'fredeeb/tardis.nvim', config = true }
+{
+    'fredeeb/tardis.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    config = true,
+}
 ```
 
-The default options are 
+The default options are
 
 ```lua
 require('tardis-nvim').setup {
