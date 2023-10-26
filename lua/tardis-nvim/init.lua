@@ -29,9 +29,11 @@ local function get_git_root()
 end
 
 local function file_at_rev(revision, path)
+    local relative = string.sub(path, string.len(get_git_root()) + 2, string.len(path))
+
     return Job:new {
         command = 'git',
-        args = { 'show', string.format('%s:%s', revision, path)}
+        args = { 'show', string.format('%s:%s', revision, relative)}
     }:sync()
 end
 
