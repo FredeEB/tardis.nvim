@@ -18,9 +18,6 @@ local function get_git_root()
     return Job:new({
         command = 'git',
         args = { 'rev-parse', '--show-toplevel' },
-        on_stderr = function ()
-            vim.notify('Unable to determine git root', vim.log.levels.WARN)
-        end,
     }):sync()
 end
 
@@ -125,7 +122,8 @@ end
 local function tardis()
     local git_root = get_git_root()
 
-    if vim.tbl_isempty(git_root) then
+    if not git_root() then
+        vim.notify('Unable to determine git root', vim.log.levels.WARN)
         return
     end
 
