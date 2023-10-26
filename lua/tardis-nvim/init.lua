@@ -18,18 +18,14 @@ local function get_git_root()
     return Job:new({
         command = 'git',
         args = { 'rev-parse', '--show-toplevel' },
-        on_exit = function (j, status)
-            if status ~= 0 then
-                error("git couldn't resolve the root", 4)
-            end
-
-            return j:result()
-        end
-    }):sync()[1]
+        on_stderr = function ()
+            vim.notify('Unable to determine git root', vim.log.levels.WARN)
+        end,
+    }):sync()
 end
 
-local function file_at_rev(revision, path)
-    local relative = string.sub(path, string.len(get_git_root()) + 2, string.len(path))
+local function file_at_rev(revision, path, root)
+    local relative = string.sub(path, string.len(root) + 2, string.len(path))
 
     return Job:new {
         command = 'git',
@@ -37,10 +33,10 @@ local function file_at_rev(revision, path)
     }:sync()
 end
 
-local function get_git_commits_for_current_file(file)
+local function get_git_commits_for_current_file(file, root)
     local log = Job:new({
         command = 'git',
-        args = { '-C', get_git_root(), 'log', '-n', config.commits, '--pretty=format:%h', '--', file },
+        args = { '-C', root, 'log', '-n', config.commits, '--pretty=format:%h', '--', file },
     }):sync()
     return log
 end
@@ -49,11 +45,11 @@ local function force_delete_buffer(buffer)
     return function() vim.api.nvim_buf_delete(buffer, { force = true }) end
 end
 
-local function commit_message(commit)
+local function commit_message(commit, root)
     return function ()
         local message = Job:new({
             command = 'git',
-            args = { '-C', get_git_root(), 'show', '--compact-summary', commit }
+            args = { '-C', root, 'show', '--compact-summary', commit }
         }):sync()
 
         local buffer = vim.api.nvim_create_buf(false, true)
@@ -85,12 +81,12 @@ local function is_tardis_buffer(buffer)
     return string.match(vim.api.nvim_buf_get_name(buffer), constants.name_prefix) ~= nil
 end
 
-local function setup_keymap(origin, buffers)
+local function setup_keymap(root, buffers)
     for i, buffer_info in ipairs(buffers) do
         local buffer = buffer_info.fd
         local commit = buffer_info.commit
         vim.keymap.set('n', config.keymap.quit, force_delete_buffer(0), { buffer = buffer })
-        vim.keymap.set('n', config.keymap.commit_message, commit_message(commit), { buffer = buffer })
+        vim.keymap.set('n', config.keymap.commit_message, commit_message(commit, root), { buffer = buffer })
 
         if i > 1 then
             vim.keymap.set('n', config.keymap.prev, goto_buffer(buffers, i - 1), { buffer = buffer })
@@ -127,6 +123,12 @@ local function setup_autocmds(origin, buffers)
 end
 
 local function tardis()
+    local git_root = get_git_root()
+
+    if vim.tbl_isempty(git_root) then
+        return
+    end
+
     local path = vim.fn.expand('%:p')
     local filetype = vim.bo.filetype
 
@@ -139,7 +141,7 @@ local function tardis()
             commit = commit
         }
         local buffer = buffers[i].fd
-        local file_at_commit = file_at_rev(commit, path)
+        local file_at_commit = file_at_rev(commit, path, git_root[1])
         vim.api.nvim_buf_set_lines(buffer, 0, -1, false, file_at_commit)
         vim.api.nvim_buf_set_option(buffer, 'filetype', filetype)
         vim.api.nvim_buf_set_option(buffer, 'readonly', true)
@@ -147,7 +149,7 @@ local function tardis()
     end
     local origin = vim.api.nvim_get_current_buf()
     setup_autocmds(origin, buffers)
-    setup_keymap(origin, buffers)
+    setup_keymap(git_root[1], buffers)
 
     goto_buffer(buffers, 1)()
 end
