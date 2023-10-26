@@ -131,10 +131,14 @@ local function tardis()
 
     local path = vim.fn.expand('%:p')
     local filetype = vim.bo.filetype
-
-    local log = get_git_commits_for_current_file(path)
-
+    local log = get_git_commits_for_current_file(path, git_root[1])
     local buffers = {}
+
+    if vim.tbl_isempty(log) then
+        vim.notify('No previous revisions of this file were found', vim.log.levels.WARN)
+        return
+    end
+
     for i, commit in ipairs(log) do
         buffers[i] = {
             fd = vim.api.nvim_create_buf(false, true),
