@@ -49,6 +49,10 @@ local function force_delete_buffer(buffer)
     return function() vim.api.nvim_buf_delete(buffer, { force = true }) end
 end
 
+local function build_commit_buffer_name(commit, buffer)
+    return string.format('%s#%s (%s)', constants.name_prefix, commit, buffer)
+end
+
 local function commit_message(commit, root)
     return function ()
         local message = Job:new({
@@ -61,7 +65,7 @@ local function commit_message(commit, root)
         vim.api.nvim_buf_set_lines(buffer, 0, -1, false, message)
         vim.api.nvim_buf_set_option(buffer, 'filetype', 'gitcommit')
         vim.api.nvim_buf_set_option(buffer, 'readonly', true)
-        vim.api.nvim_buf_set_name(buffer, constants.name_prefix .. 'message')
+        vim.api.nvim_buf_set_name(buffer, build_commit_buffer_name(commit, buffer))
 
         local current_pos = vim.api.nvim_win_get_cursor(0)
         vim.api.nvim_open_win(buffer, true, { relative = 'win', width = 100, height = #message, bufpos = current_pos })
@@ -110,7 +114,8 @@ local function setup_keymap(root, origin, buffers)
 end
 
 local function setup_autocmds(buffers)
-    local group = vim.api.nvim_create_augroup('Tardis', {})
+    local win = vim.api.nvim_get_current_win()
+    local group = vim.api.nvim_create_augroup('Tardis' .. win, {})
     for _, buffer in ipairs(buffers) do
         local to_close = vim.tbl_filter(function(other) return other.fd ~= buffer.fd end, buffers)
         vim.api.nvim_create_autocmd({'BufDelete'}, {
@@ -123,6 +128,16 @@ local function setup_autocmds(buffers)
             end,
         })
     end
+end
+
+local function build_buffer_name(filename, commit, buffer)
+    return string.format(
+        '%s%s #%s (%s)',
+        constants.name_prefix,
+        filename,
+        commit,
+        buffer
+    )
 end
 
 local function tardis()
@@ -141,12 +156,14 @@ local function tardis()
     end
 
     local buffers = {}
+    local filename = vim.fn.expand('%')
     local filetype = vim.bo.filetype
     local origin = vim.api.nvim_get_current_buf()
 
     for _, commit in ipairs(log) do
         local buffer = vim.api.nvim_create_buf(false, true)
         local file_at_commit = file_at_rev(commit, path, git_root[1])
+        local name = build_buffer_name(filename, commit, buffer)
 
         table.insert(buffers, {
             fd = buffer,
@@ -156,7 +173,7 @@ local function tardis()
         vim.api.nvim_buf_set_lines(buffer, 0, -1, false, file_at_commit)
         vim.api.nvim_buf_set_option(buffer, 'filetype', filetype)
         vim.api.nvim_buf_set_option(buffer, 'readonly', true)
-        vim.api.nvim_buf_set_name(buffer, constants.name_prefix .. commit)
+        vim.api.nvim_buf_set_name(buffer, name)
     end
 
     setup_autocmds(buffers)
