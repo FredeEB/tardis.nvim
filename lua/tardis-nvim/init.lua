@@ -115,7 +115,7 @@ local function setup_autocmds(buffers)
     local group = vim.api.nvim_create_augroup('Tardis' .. win, {})
     for _, buffer in ipairs(buffers) do
         local to_close = vim.tbl_filter(function(other) return other.fd ~= buffer.fd end, buffers)
-        vim.api.nvim_create_autocmd({'BufDelete'}, {
+        vim.api.nvim_create_autocmd({'BufUnload'}, {
             buffer = buffer.fd,
             callback = function ()
                 vim.api.nvim_del_augroup_by_id(group)
