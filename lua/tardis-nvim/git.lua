@@ -40,8 +40,18 @@ function M.get_commit_message(commit, root, keymap)
         vim.api.nvim_buf_set_option(buffer, 'readonly', true)
         vim.api.nvim_buf_set_name(buffer, util.build_commit_buffer_name(commit))
 
-        local current_pos = vim.api.nvim_win_get_cursor(0)
-        vim.api.nvim_open_win(buffer, true, { relative = 'win', width = 100, height = #message, bufpos = current_pos })
+        local current_ui = vim.api.nvim_list_uis()[1]
+        if not current_ui then
+            error("no ui found")
+        end
+        vim.api.nvim_open_win(buffer, true, {
+            relative = 'win',
+            anchor = 'NE',
+            width = 100,
+            height = #message,
+            row = 0,
+            col = current_ui.width,
+        })
     end
 end
 
