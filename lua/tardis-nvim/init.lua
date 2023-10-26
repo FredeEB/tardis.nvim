@@ -18,10 +18,7 @@ local function get_git_root()
     return Job:new({
         command = 'git',
         args = { 'rev-parse', '--show-toplevel' },
-        on_stderr = function ()
-            vim.notify('Unable to determine git root', vim.log.levels.WARN)
-        end,
-    }):sync()
+    }):sync()[1]
 end
 
 local function trim_root_path(path, root)
@@ -143,12 +140,13 @@ end
 local function tardis()
     local git_root = get_git_root()
 
-    if vim.tbl_isempty(git_root) then
+    if not git_root then
+        vim.notify('Unable to determine git root', vim.log.levels.WARN)
         return
     end
 
     local path = vim.fn.expand('%:p')
-    local log = get_git_commits_for_current_file(path, git_root[1])
+    local log = get_git_commits_for_current_file(path, git_root)
 
     if vim.tbl_isempty(log) then
         vim.notify('No previous revisions of this file were found', vim.log.levels.WARN)
@@ -162,7 +160,7 @@ local function tardis()
 
     for _, commit in ipairs(log) do
         local buffer = vim.api.nvim_create_buf(false, true)
-        local file_at_commit = file_at_rev(commit, path, git_root[1])
+        local file_at_commit = file_at_rev(commit, path, git_root)
         local name = build_buffer_name(filename, commit, buffer)
 
         table.insert(buffers, {
@@ -177,7 +175,7 @@ local function tardis()
     end
 
     setup_autocmds(buffers)
-    setup_keymap(git_root[1], origin, buffers)
+    setup_keymap(git_root, origin, buffers)
     goto_buffer(1, buffers)()
 end
 
