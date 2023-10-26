@@ -24,8 +24,12 @@ local function get_git_root()
     }):sync()
 end
 
+local function trim_root_path(path, root)
+    return string.sub(path, string.len(root) + 2, string.len(path))
+end
+
 local function file_at_rev(revision, path, root)
-    local relative = string.sub(path, string.len(root) + 2, string.len(path))
+    local relative = trim_root_path(path, root)
 
     return Job:new {
         command = 'git',
