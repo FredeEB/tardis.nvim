@@ -125,7 +125,7 @@ local function setup_autocmds(origin, buffers)
 end
 
 local function tardis()
-    local path = vim.fn.expand('%')
+    local path = vim.fn.expand('%:p')
     local filetype = vim.bo.filetype
 
     local log = get_git_commits_for_current_file(path)
