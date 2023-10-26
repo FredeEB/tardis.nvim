@@ -93,9 +93,8 @@ local function setup_keymap(root, origin, buffers)
     for i, buffer_info in ipairs(buffers) do
         local buffer = buffer_info.fd
         local commit = buffer_info.commit
-        vim.keymap.set('n', config.keymap.quit, force_delete_buffer(0), { buffer = buffer })
-        vim.keymap.set('n', config.keymap.commit_message, commit_message(commit, root), { buffer = buffer })
         vim.keymap.set('n', config.keymap.quit, quit(origin, buffer), { buffer = buffer })
+        vim.keymap.set('n', config.keymap.commit_message, commit_message(commit, root), { buffer = buffer })
 
         if i > 1 then
             vim.keymap.set('n', config.keymap.prev, goto_buffer(i - 1, buffers), { buffer = buffer })
