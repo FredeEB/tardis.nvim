@@ -38,7 +38,7 @@ function M.get_commit_message(commit, root, keymap)
         vim.api.nvim_buf_set_lines(buffer, 0, -1, false, message)
         vim.api.nvim_buf_set_option(buffer, 'filetype', 'gitcommit')
         vim.api.nvim_buf_set_option(buffer, 'readonly', true)
-        vim.api.nvim_buf_set_name(buffer, util.build_commit_buffer_name(commit))
+        vim.api.nvim_buf_set_name(buffer, util.build_commit_buffer_name(commit, buffer))
 
         local current_ui = vim.api.nvim_list_uis()[1]
         if not current_ui then

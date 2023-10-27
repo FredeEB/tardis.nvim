@@ -36,7 +36,7 @@ local function tardis()
     for _, commit in ipairs(log) do
         local buffer = vim.api.nvim_create_buf(false, true)
         local file_at_commit = git.get_file_at_rev(commit, path, git_root)
-        local name = util.build_buffer_name(filename, commit)
+        local name = util.build_buffer_name(filename, commit, buffer)
 
         table.insert(buffers, {
             fd = buffer,
