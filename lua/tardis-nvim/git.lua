@@ -15,7 +15,7 @@ function M.get_file_at_rev(revision, path, root)
 
     return Job:new {
         command = 'git',
-        args = { 'show', string.format('%s:%s', revision, relative)}
+        args = { '-C', root, 'show', string.format('%s:%s', revision, relative) }
     }:sync()
 end
 
