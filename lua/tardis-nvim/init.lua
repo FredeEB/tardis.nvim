@@ -9,7 +9,7 @@ local config = {
         quit = 'q',
         commit_message = 'm',
     },
-    commits = 32,
+    commits = 256,
 }
 
 local function tardis()
