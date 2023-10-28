@@ -10,28 +10,25 @@ function M.get_git_root()
     }):sync()[1]
 end
 
-function M.get_file_at_rev(revision, path, root)
-    local relative = util.trim_root_path(path, root)
-
+local function git(root, ...)
     return Job:new {
         command = 'git',
-        args = { '-C', root, 'show', string.format('%s:%s', revision, relative) }
+        args = { '-C', root, ... }
     }:sync()
 end
 
+function M.get_file_at_rev(revision, path, root)
+    local relative = util.trim_root_path(path, root)
+    return git(root, 'show', string.format('%s:%s', revision, relative))
+end
+
 function M.get_git_commits_for_current_file(file, root, commits)
-    return Job:new({
-        command = 'git',
-        args = { '-C', root, 'log', '-n', commits, '--pretty=format:%h', '--', file },
-    }):sync()
+    return git(root, 'log', '-n', commits, '--pretty=format:%h', '--', file )
 end
 
 function M.get_commit_message(commit, root, keymap)
     return function ()
-        local message = Job:new({
-            command = 'git',
-            args = { '-C', root, 'show', '--compact-summary', commit }
-        }):sync()
+        local message = git(root, 'show', '--compact-summary', commit)
 
         local buffer = vim.api.nvim_create_buf(false, true)
         vim.keymap.set('n', keymap.quit, util.force_delete_buffer(0), { buffer = buffer })
