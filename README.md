@@ -2,7 +2,7 @@
 
 Tardis allows you to travel in time (git history) scrolling through each revision of your current file.
 
-Inspired by ![git-timemachine](https://github.com/emacsmirror/git-timemachine) which I used extensively when I was using emacs.
+Inspired by [git-timemachine](https://github.com/emacsmirror/git-timemachine) which I used extensively when I was using emacs.
 
 # Installation
 
