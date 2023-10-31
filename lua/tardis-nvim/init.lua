@@ -7,7 +7,7 @@ local config = {
         next = '<C-j>',
         prev = '<C-k>',
         quit = 'q',
-        commit_message = 'm',
+        commit_message = '<C-m>',
     },
     commits = 256,
 }
