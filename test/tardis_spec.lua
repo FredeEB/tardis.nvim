@@ -1,0 +1,12 @@
+describe('tardis module', function()
+    it ('can requrie the module', function()
+        require('tardis-nvim')
+    end)
+
+    it ('has submodules', function()
+        require('tardis-nvim.core')
+        require('tardis-nvim.git')
+        require('tardis-nvim.constants')
+        require('tardis-nvim.util')
+    end)
+end)
