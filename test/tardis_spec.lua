@@ -1,5 +1,5 @@
 describe('tardis module', function()
-    it ('can requrie the module', function()
+    it ('can require the module', function()
         require('tardis-nvim')
     end)
 
