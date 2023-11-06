@@ -9,12 +9,12 @@ function M.force_delete_buffer(buffer)
     return function() vim.api.nvim_buf_delete(buffer, { force = true }) end
 end
 
-function M.build_commit_buffer_name(commit)
-    return string.format('%s: #%s', constants.name_prefix, commit)
+function M.build_commit_buffer_name(commit, buffer)
+    return string.format('%s: #%s (%s)', constants.name_prefix, commit, buffer)
 end
 
-function M.build_buffer_name(filename, commit)
-    return string.format('%s: %s #%s', constants.name_prefix, filename, commit)
+function M.build_buffer_name(filename, commit, buffer)
+    return string.format('%s: %s #%s (%s)', constants.name_prefix, filename, commit, buffer)
 end
 
 function M.close_session(origin, buffer)
