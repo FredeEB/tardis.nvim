@@ -5,7 +5,7 @@ local M = {}
 ---@field get_revisions_for_current_file fun(parent: TardisSession?): string[]
 --- Optional fields
 ---@field create_revision_message_buffer? fun(parent: TardisSession?)
----@field get_file_at_revision? fun(parent: TardisSession?)
+---@field get_file_at_revision? fun(revision: string, parent: TardisSession?)
 ---@field get_revision_under_cursor? fun(parent: TardisSession?)
 
 
