@@ -4,7 +4,6 @@ describe('tardis module', function()
     end)
 
     it ('has submodules', function()
-        require('tardis-nvim.core')
         require('tardis-nvim.git')
         require('tardis-nvim.constants')
         require('tardis-nvim.session')
