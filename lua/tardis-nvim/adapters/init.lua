@@ -2,7 +2,7 @@ local M = {}
 
 ---@class TardisAdapter
 ---@field create_revision_buffer fun(revision: string, parent: TardisSession?): integer
----@field get_revisions_for_current_file fun(parent: TardisSession?): TardisBuffer[]
+---@field get_revisions_for_current_file fun(parent: TardisSession?): string[]
 --- Optional fields
 ---@field create_revision_message_buffer? fun(parent: TardisSession?)
 ---@field get_file_at_revision? fun(parent: TardisSession?)

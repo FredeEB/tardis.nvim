@@ -39,7 +39,10 @@ end
 ---@param parent TardisSessionManager
 ---@param adapter_type string
 function M.Session:init(id, parent, adapter_type)
-    self.adapter = adapters.get_adapter(adapter_type)
+    local adapter = adapters.get_adapter(adapter_type)
+    if not adapter then return end
+
+    self.adapter = adapter
     self.filetype = vim.api.nvim_buf_get_option(0, 'filetype')
     self.origin = vim.api.nvim_get_current_buf()
     self.id = id
