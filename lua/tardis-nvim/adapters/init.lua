@@ -21,6 +21,8 @@ function M.get_adapter(type)
     if ok then
         return adapter
     end
+    vim.notify('No suitable adapter found for current file')
+    return nil
 end
 
 return M
