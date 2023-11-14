@@ -1,15 +1,11 @@
 local util = require('tardis-nvim.util')
 local git = require('tardis-nvim.git')
 local core = require('tardis-nvim.core')
+local cfg = require('tardis-nvim.user_config')
+local sm = require('tardis-nvim.session_manager')
 
-local config = {
-    keymap = {
-        next = '<C-j>',
-        prev = '<C-k>',
-        quit = 'q',
-        commit_message = '<C-m>',
-    },
-    commits = 256,
+Tardis = {
+    session_manager = nil
 }
 
 local function tardis()
@@ -52,17 +48,15 @@ local function tardis()
     core.setup_autocmds(buffers)
     core.setup_keymap(git_root, origin, buffers, config.keymap)
     util.goto_buffer(1, buffers)()
+---@param user_config TardisPartialConfig?
+function Tardis.setup(user_config)
+    if Tardis.session_manager then return end
+    local config = cfg.Config:new(user_config)
+    Tardis.session_manager = sm.SessionManager:new(config)
 end
 
-local function setup(user_config)
-    user_config = user_config or {}
-    config = vim.tbl_deep_extend('keep', user_config, config)
-
-    vim.api.nvim_create_user_command("Tardis", tardis, {})
+function Tardis.tardis()
+    Tardis.session_manager:create_session()
 end
 
-return {
-    setup = setup,
-    tardis = tardis,
-}
-
+return Tardis
