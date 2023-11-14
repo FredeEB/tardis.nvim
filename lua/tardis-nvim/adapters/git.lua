@@ -7,6 +7,10 @@ local M = {}
 ---@param ... string
 ---@return string[]
 local function git(root, ...)
+    root = Job:new{
+        command = 'git',
+        args = { '-C', root, 'rev-parse', '--show-toplevel' }
+    }:sync()[1]
     local output = Job:new {
         command = 'git',
         args = { '-C', root, ... },
