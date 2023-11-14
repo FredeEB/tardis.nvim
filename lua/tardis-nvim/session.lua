@@ -23,29 +23,10 @@ function M.Session:close()
     end
 end
 
-M.SessionManager = { }
-
-function M.SessionManager:new(s)
-    s = s or {
-        next = 1,
-        sessions = {},
-    }
-    self.__index = self
-    setmetatable(s, self)
-    return s
 end
 
-function M.SessionManager:create_session(buffers)
-    assert(#buffers)
-    local id = self.next
-    self.next = self.next + 1
-    local session = M.Session:new({ id = id, parent = self, buffers = buffers })
-    table.insert(self.sessions, id, session)
-    return session
 end
 
-function M.SessionManager:on_session_close(session)
-    table.remove(self.sessions, session.id)
 end
 
 return M
