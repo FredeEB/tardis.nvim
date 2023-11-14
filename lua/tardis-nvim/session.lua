@@ -86,7 +86,7 @@ function M.Session:goto_buffer(index)
     local buf = self.buffers[index]
     if not buf then return end
     if not buf.fd then
-        buf.fd = self.adapter.create_revision_buffer(buffer.revision)
+        buf.fd = self.adapter.create_revision_buffer(buf.revision, self)
     end
     buf:focus()
     self.curret_buffer_index = index
