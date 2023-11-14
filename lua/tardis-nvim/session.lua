@@ -13,8 +13,6 @@ local M = {}
 ---@field origin integer
 ---@field buffers TardisBuffer[]
 ---@field adapter TardisAdapter
----@field next_buffer fun(): boolean
----@field prev_buffer fun(): boolean
 M.Session = {}
 
 ---@param id integer
