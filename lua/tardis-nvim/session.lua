@@ -26,13 +26,15 @@ function M.Session:new(id, parent)
     return session
 end
 
-function M.Session:setup_keymaps()
-    local keymap = self.parent.config.keymap
-    for _, buf in ipairs(self.buffers) do
-        vim.keymap.set('n', keymap.next, function() self:next_buffer() end, { buffer = buf.fd })
-        vim.keymap.set('n', keymap.prev, function() self:prev_buffer() end, { buffer = buf.fd })
-        vim.keymap.set('n', keymap.quit, function() self:close() end, { buffer = buf.fd })
-    end
+---comment
+---@param fd integer
+---@param parent TardisSession
+local function set_keymaps_for_buffer(fd, parent)
+    local keymap = parent.parent.config.keymap
+    vim.keymap.set('n', keymap.next, function() parent:next_buffer() end, { buffer = fd })
+    vim.keymap.set('n', keymap.prev, function() parent:prev_buffer() end, { buffer = fd })
+    vim.keymap.set('n', keymap.quit, function() parent:close() end, { buffer = fd })
+    vim.keymap.set('n', keymap.revision_message, function() parent:close() end, { buffer = fd })
 end
 
 ---@param id integer
@@ -60,10 +62,10 @@ function M.Session:init(id, parent, adapter_type)
         local fd = nil
         if i < parent.config.settings.initial_revisions then
             fd = self.adapter.create_revision_buffer(revision, self)
+            set_keymaps_for_buffer(fd, self)
         end
         table.insert(self.buffers, buffer.Buffer:new(revision, fd))
     end
-    self:setup_keymaps()
     parent:on_session_opened(self)
 end
 
@@ -87,6 +89,7 @@ function M.Session:goto_buffer(index)
     if not buf then return end
     if not buf.fd then
         buf.fd = self.adapter.create_revision_buffer(buf.revision, self)
+        set_keymaps_for_buffer(buf.fd, self)
     end
     buf:focus()
     self.curret_buffer_index = index
