@@ -26,12 +26,13 @@ The default options are
 
     require('tardis-nvim').setup {
         keymap = {
-            next = '<C-j>',       -- next entry in log (older)
-            prev = '<C-k>',       -- previous entry in log (newer)
-            quit = 'q',           -- quit all
-            commit_message = 'm', -- show commit message for current commit in buffer
+            ["next"] = '<C-j>',         -- next entry in log (older)
+            ["prev"] = '<C-k>',         -- previous entry in log (newer)
+            ["quit"] = 'q',             -- quit all
+            ["revision_message"] = 'm', -- show revision message for current revision
         },
-        commits = 32,             -- max number of commits to read
+        initial_revisions = 10,         -- initial revisions to create buffers for
+        max_revisions = 256,            -- max number of revisions to load
     }
 
 Usage
