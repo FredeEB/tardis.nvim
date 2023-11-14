@@ -36,9 +36,10 @@ end
 ---@param parent TardisSession
 ---@return string
 function M.get_revision_under_cursor(parent)
+    local current_revision = parent:get_current_buffer().revision
     local root = util.dirname(parent.path)
     local line, _ = vim.api.nvim_win_get_cursor(0)
-    local blame_line = git(root, 'blame', '-L', line)[1]
+    local blame_line = git(root, 'blame', '-L', line, current_revision)[1]
     return vim.split(blame_line, ' ', {})[1]
 end
 

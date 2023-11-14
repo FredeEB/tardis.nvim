@@ -83,6 +83,11 @@ function M.Session:close()
     end
 end
 
+---@return TardisBuffer
+function M.Session:get_current_buffer()
+    return self.buffers[self.curret_buffer_index]
+end
+
 ---@param index integer
 function M.Session:goto_buffer(index)
     local buf = self.buffers[index]
