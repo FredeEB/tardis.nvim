@@ -28,7 +28,7 @@ local function get_git_file_path(path)
     return git(root, 'ls-files', '--full-name', path)[1]
 end
 
----@param revision TardisRevision
+---@param revision string
 ---@param parent TardisSession
 ---@return string[]
 function M.get_file_at_revision(revision, parent)
@@ -48,7 +48,7 @@ function M.get_revision_under_cursor(parent)
 end
 
 ---@param parent TardisSession
----@return TardisRevision[]
+---@return string[]
 function M.get_revisions_for_current_file(parent)
     local root = util.dirname(parent.path)
     local file = get_git_file_path(parent.path)

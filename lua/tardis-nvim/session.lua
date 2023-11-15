@@ -26,7 +26,6 @@ function M.Session:new(id, parent)
     return session
 end
 
----comment
 ---@param revision string
 function M.Session:create_buffer(revision)
     local fd = vim.api.nvim_create_buf(false, true)
