@@ -38,6 +38,7 @@ end
 
 ---@param force boolean?
 function M.Buffer:close(force)
+    if not self.fd then return end
     force = force or true
     vim.api.nvim_buf_delete(self.fd, { force = force })
     self.fd = nil
