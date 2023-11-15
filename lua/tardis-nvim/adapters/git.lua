@@ -58,7 +58,8 @@ end
 ---@param revision string
 ---@param parent TardisSession
 function M.get_revision_info(revision, parent)
-    return git(parent.path, 'show', '--compact-summary', revision)
+    local root = util.dirname(parent.path)
+    return git(root, 'show', '--compact-summary', revision)
 end
 
 return M

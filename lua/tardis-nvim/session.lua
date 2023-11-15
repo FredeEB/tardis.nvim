@@ -45,7 +45,7 @@ function M.Session:create_buffer(revision)
 end
 
 function M.Session:create_info_buffer(revision)
-    local message = self.adapter:get_revision_info(revision, self)
+    local message = self.adapter.get_revision_info(revision, self)
     if not message or #message == 0 then
         vim.notify('revision_message was empty')
         return
