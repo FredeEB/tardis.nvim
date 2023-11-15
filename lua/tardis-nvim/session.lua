@@ -27,14 +27,48 @@ function M.Session:new(id, parent)
 end
 
 ---comment
----@param fd integer
----@param parent TardisSession
-local function set_keymaps_for_buffer(fd, parent)
-    local keymap = parent.parent.config.keymap
-    vim.keymap.set('n', keymap.next, function() parent:next_buffer() end, { buffer = fd })
-    vim.keymap.set('n', keymap.prev, function() parent:prev_buffer() end, { buffer = fd })
-    vim.keymap.set('n', keymap.quit, function() parent:close() end, { buffer = fd })
-    vim.keymap.set('n', keymap.revision_message, function() parent:close() end, { buffer = fd })
+---@param revision string
+function M.Session:create_buffer(revision)
+    local fd = vim.api.nvim_create_buf(false, true)
+    local file_at_revision = self.adapter.get_file_at_revision(revision, self)
+
+    vim.api.nvim_buf_set_lines(fd, 0, -1, false, file_at_revision)
+    vim.api.nvim_buf_set_option(fd, 'filetype', self.filetype)
+    vim.api.nvim_buf_set_option(fd, 'readonly', true)
+
+    local keymap = self.parent.config.keymap
+    vim.keymap.set('n', keymap.next, function() self:next_buffer() end, { buffer = fd })
+    vim.keymap.set('n', keymap.prev, function() self:prev_buffer() end, { buffer = fd })
+    vim.keymap.set('n', keymap.quit, function() self:close() end, { buffer = fd })
+    vim.keymap.set('n', keymap.revision_message, function() self:create_info_buffer(revision) end, { buffer = fd })
+
+    return fd
+end
+
+function M.Session:create_info_buffer(revision)
+    local message = self.adapter:get_revision_info(revision, self)
+    if not message or #message == 0 then
+        vim.notify('revision_message was empty')
+        return
+    end
+    local fd = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_lines(fd, 0, -1, false, message)
+    -- TODO: use appropriate filetype
+    vim.api.nvim_buf_set_option(fd, 'filetype', 'gitrevision')
+    vim.api.nvim_buf_set_option(fd, 'readonly', true)
+
+    local current_ui = vim.api.nvim_list_uis()[1]
+    if not current_ui then
+        error("no ui found")
+    end
+    vim.api.nvim_open_win(fd, false, {
+        relative = 'win',
+        anchor = 'NE',
+        width = 100,
+        height = #message,
+        row = 0,
+        col = current_ui.width,
+    })
 end
 
 ---@param id integer
@@ -61,8 +95,7 @@ function M.Session:init(id, parent, adapter_type)
     for i, revision in ipairs(log) do
         local fd = nil
         if i < parent.config.settings.initial_revisions then
-            fd = self.adapter.create_revision_buffer(revision, self)
-            set_keymaps_for_buffer(fd, self)
+            fd = self:create_buffer(revision)
         end
         table.insert(self.buffers, buffer.Buffer:new(revision, fd))
     end
@@ -88,8 +121,7 @@ function M.Session:goto_buffer(index)
     local buf = self.buffers[index]
     if not buf then return end
     if not buf.fd then
-        buf.fd = self.adapter.create_revision_buffer(buf.revision, self)
-        set_keymaps_for_buffer(buf.fd, self)
+        buf.fd = self:create_buffer(buf.revision)
     end
     buf:focus()
     self.curret_buffer_index = index

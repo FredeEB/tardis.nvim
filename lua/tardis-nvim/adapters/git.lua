@@ -55,43 +55,10 @@ function M.get_revisions_for_current_file(parent)
     return git(root, 'log', '-n', parent.parent.config.settings.max_revisions, '--pretty=format:%h', '--', file)
 end
 
----@param revision TardisRevision
+---@param revision string
 ---@param parent TardisSession
-function M.create_revision_buffer(revision, parent)
-    local fd = vim.api.nvim_create_buf(false, true)
-    local file_at_revision = M.get_file_at_revision(revision, parent)
-
-    vim.api.nvim_buf_set_lines(fd, 0, -1, false, file_at_revision)
-    vim.api.nvim_buf_set_option(fd, 'filetype', parent.filetype)
-    vim.api.nvim_buf_set_option(fd, 'readonly', true)
-
-    return fd
-end
-
----@param path string
----@param parent TardisBuffer
-function M.create_revision_message_buffer(path, parent)
-    local root = util.dirname(path)
-    local message = git(root, 'show', '--compact-summary', parent.revision)
-
-    local buffer = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_lines(buffer, 0, -1, false, message)
-    vim.api.nvim_buf_set_option(buffer, 'filetype', 'gitrevision')
-    vim.api.nvim_buf_set_option(buffer, 'readonly', true)
-    vim.api.nvim_buf_set_name(buffer, "revision message")
-
-    local current_ui = vim.api.nvim_list_uis()[1]
-    if not current_ui then
-        error("no ui found")
-    end
-    vim.api.nvim_open_win(buffer, false, {
-        relative = 'win',
-        anchor = 'NE',
-        width = 100,
-        height = #message,
-        row = 0,
-        col = current_ui.width,
-    })
+function M.get_revision_info(revision, parent)
+    return git(parent.path, 'show', '--compact-summary', revision)
 end
 
 return M
