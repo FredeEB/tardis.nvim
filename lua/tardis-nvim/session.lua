@@ -40,6 +40,7 @@ function M.Session:create_buffer(revision)
     vim.keymap.set('n', keymap.prev, function() self:prev_buffer() end, { buffer = fd })
     vim.keymap.set('n', keymap.quit, function() self:close() end, { buffer = fd })
     vim.keymap.set('n', keymap.revision_message, function() self:create_info_buffer(revision) end, { buffer = fd })
+    vim.keymap.set('n', keymap.commit, function() self:commit_to_origin() end, { buffer = fd })
 
     return fd
 end
@@ -132,6 +133,12 @@ end
 
 function M.Session:prev_buffer()
     self:goto_buffer(self.curret_buffer_index - 1)
+end
+
+function M.Session:commit_to_origin()
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    vim.api.nvim_buf_set_lines(self.origin, 0, -1, false, lines)
+    self:close()
 end
 
 return M

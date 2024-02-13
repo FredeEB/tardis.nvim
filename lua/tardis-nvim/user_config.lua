@@ -22,6 +22,7 @@ local function get_default_config()
             ['prev'] = '<C-k>',
             ['quit'] = 'q',
             ['revision_message'] = '<C-m>',
+            ['commit'] = '<C-g>',
         },
         settings = {
             max_revisions = 256,
