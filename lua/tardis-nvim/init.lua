@@ -13,11 +13,15 @@ function Tardis.setup(user_config)
     end
     local config = cfg.Config:new(user_config)
     Tardis.session_manager = sm.SessionManager:new(config)
-    vim.api.nvim_create_user_command('Tardis', Tardis.tardis, {})
+    vim.api.nvim_create_user_command('Tardis', Tardis.tardis, { nargs='?' })
 end
 
-function Tardis.tardis()
-    Tardis.session_manager:create_session()
+function Tardis.tardis(cmd_opts)
+    if cmd_opts then
+        Tardis.session_manager:create_session(cmd_opts.fargs[1])
+    else
+        Tardis.session_manager:create_session(nil)
+    end
 end
 
 return Tardis

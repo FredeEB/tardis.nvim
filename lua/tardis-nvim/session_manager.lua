@@ -23,8 +23,8 @@ function M.SessionManager:new(config)
     return session_manager
 end
 
-function M.SessionManager:create_session()
-    local session = ses.Session:new(self.next, self)
+function M.SessionManager:create_session(args)
+    local session = ses.Session:new(self.next, self, args)
     self.next = self.next + 1
     session:goto_buffer(1)
 end

@@ -17,11 +17,12 @@ M.Session = {}
 
 ---@param id integer
 ---@param parent TardisSessionManager
-function M.Session:new(id, parent)
+---@param adapter TardisAdapter?
+function M.Session:new(id, parent, adapter)
     local session = {}
     setmetatable(session, self)
     self.__index = self
-    session:init(id, parent)
+    session:init(id, parent, adapter)
 
     return session
 end

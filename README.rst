@@ -43,10 +43,14 @@ Using tardis is pretty simple
 
 ::
 
-   :Tardis
+   :Tardis <adapter>
 
 This puts you into a new buffer where you can use the keymaps, like
 described above, to navigate the revisions of the currently open file
+
+List of currently supported adapters:
+
+* git
 
 Known issues
 ============
