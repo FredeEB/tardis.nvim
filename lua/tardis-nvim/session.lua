@@ -83,6 +83,7 @@ function M.Session:init(id, parent, adapter_type)
 
     self.adapter = adapter
     self.filetype = vim.api.nvim_get_option_value('filetype', { buf = 0 })
+    self.filename = vim.api.nvim_buf_get_name(0)
     self.origin = vim.api.nvim_get_current_buf()
     self.id = id
     self.parent = parent
@@ -100,7 +101,7 @@ function M.Session:init(id, parent, adapter_type)
         if i < parent.config.settings.initial_revisions then
             fd = self:create_buffer(revision)
         end
-        table.insert(self.buffers, buffer.Buffer:new(revision, fd))
+        table.insert(self.buffers, buffer.Buffer:new(self.filename, revision, fd))
     end
     parent:on_session_opened(self)
 end

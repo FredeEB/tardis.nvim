@@ -24,9 +24,16 @@ function M.SessionManager:new(config)
 end
 
 function M.SessionManager:create_session(args)
+    for _, session in ipairs(self.sessions) do
+        if session.filename == vim.api.nvim_buf_get_name(0) then
+            session:goto_buffer(1)
+        end
+        return
+    end
     local session = ses.Session:new(self.next, self, args)
     self.next = self.next + 1
     session:goto_buffer(1)
+    table.insert(self.sessions, session)
 end
 
 ---@param session TardisSession

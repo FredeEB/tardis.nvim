@@ -8,12 +8,13 @@ M.Buffer = {}
 ---@param revision string
 ---@param fd integer?
 ---@return TardisBuffer
-function M.Buffer:new(revision, fd)
+function M.Buffer:new(name, revision, fd)
     local buffer = {}
     self.__index = self
 
     buffer.revision = revision
     buffer.fd = fd
+    vim.api.nvim_buf_set_name(fd, string.format('%s (%s)', name, revision))
 
     return setmetatable(buffer, self)
 end
