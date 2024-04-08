@@ -1,5 +1,5 @@
-local buffer = require('tardis-nvim.buffer')
 local adapters = require('tardis-nvim.adapters')
+local buffer = require('tardis-nvim.buffer')
 
 local M = {}
 
@@ -33,8 +33,8 @@ function M.Session:create_buffer(revision)
     local file_at_revision = self.adapter.get_file_at_revision(revision, self)
 
     vim.api.nvim_buf_set_lines(fd, 0, -1, false, file_at_revision)
-    vim.api.nvim_buf_set_option(fd, 'filetype', self.filetype)
-    vim.api.nvim_buf_set_option(fd, 'readonly', true)
+    vim.api.nvim_set_option_value('filetype', self.filetype, { buf = fd })
+    vim.api.nvim_set_option_value('readonly', true, { buf = fd })
 
     local keymap = self.parent.config.keymap
     vim.keymap.set('n', keymap.next, function() self:next_buffer() end, { buffer = fd })
@@ -55,12 +55,12 @@ function M.Session:create_info_buffer(revision)
     local fd = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_lines(fd, 0, -1, false, message)
     -- TODO: use appropriate filetype
-    vim.api.nvim_buf_set_option(fd, 'filetype', 'gitrevision')
-    vim.api.nvim_buf_set_option(fd, 'readonly', true)
+    vim.api.nvim_set_option_value('filetype', 'gitrevision', { buf = fd })
+    vim.api.nvim_set_option_value('readonly', true, { buf = fd })
 
     local current_ui = vim.api.nvim_list_uis()[1]
     if not current_ui then
-        error("no ui found")
+        error('no ui found')
     end
     vim.api.nvim_open_win(fd, false, {
         relative = 'win',
@@ -77,10 +77,12 @@ end
 ---@param adapter_type string
 function M.Session:init(id, parent, adapter_type)
     local adapter = adapters.get_adapter(adapter_type)
-    if not adapter then return end
+    if not adapter then
+        return
+    end
 
     self.adapter = adapter
-    self.filetype = vim.api.nvim_buf_get_option(0, 'filetype')
+    self.filetype = vim.api.nvim_get_option_value('filetype', { buf = 0 })
     self.origin = vim.api.nvim_get_current_buf()
     self.id = id
     self.parent = parent
@@ -120,7 +122,9 @@ end
 ---@param index integer
 function M.Session:goto_buffer(index)
     local buf = self.buffers[index]
-    if not buf then return end
+    if not buf then
+        return
+    end
     if not buf.fd then
         buf.fd = self:create_buffer(buf.revision)
     end
