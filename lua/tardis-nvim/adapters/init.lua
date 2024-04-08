@@ -7,7 +7,6 @@ local M = {}
 ---@field get_revision_info? fun(revision: string, parent: TardisSession?): string[]
 ---@field get_revision_under_cursor? fun(parent: TardisSession?): string
 
-
 ---@param type string?
 ---@return TardisAdapter?
 function M.get_adapter(type)

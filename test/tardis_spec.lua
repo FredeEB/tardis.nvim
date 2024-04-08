@@ -1,10 +1,10 @@
 describe('tardis module', function()
-    it ('can require the module', function()
+    it('can require the module', function()
         require('tardis-nvim')
     end)
 
-    it ('has submodules', function()
-        require('tardis-nvim.git')
+    it('has submodules', function()
+        require('tardis-nvim.adapters.git')
         require('tardis-nvim.session')
         require('tardis-nvim.util')
     end)

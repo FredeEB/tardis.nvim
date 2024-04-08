@@ -2,7 +2,7 @@ local cfg = require('tardis-nvim.user_config')
 local sm = require('tardis-nvim.session_manager')
 
 Tardis = {
-    session_manager = nil
+    session_manager = nil,
 }
 
 ---@param user_config TardisPartialConfig?
@@ -13,7 +13,7 @@ function Tardis.setup(user_config)
     end
     local config = cfg.Config:new(user_config)
     Tardis.session_manager = sm.SessionManager:new(config)
-    vim.api.nvim_create_user_command('Tardis', Tardis.tardis, { nargs='?' })
+    vim.api.nvim_create_user_command('Tardis', Tardis.tardis, { nargs = '?' })
 end
 
 function Tardis.tardis(cmd_opts)
