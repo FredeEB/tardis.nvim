@@ -14,7 +14,7 @@ function M.Buffer:new(name, revision, fd)
 
     buffer.revision = revision
     buffer.fd = fd
-    vim.api.nvim_buf_set_name(fd, string.format('%s (%s)', name, revision))
+    vim.api.nvim_buf_set_name(fd or 0, string.format('%s (%s)', name, revision))
 
     return setmetatable(buffer, self)
 end
