@@ -11,13 +11,13 @@ local function git(root, ...)
         command = 'git',
         args = { '-C', root, 'rev-parse', '--show-toplevel' },
     }:sync()[1]
-    local output = Job:new {
+    local output = Job:new{
         command = 'git',
         args = { '-C', root, ... },
         on_stderr = function(_, msg)
             vim.print('Tardis: git failed: ' .. msg, vim.log.levels.WARN)
         end,
-    }):sync()
+    }:sync()
     return output
 end
 
