@@ -4,7 +4,6 @@ local buffer = require('tardis-nvim.buffer')
 local M = {}
 
 ---@class TardisSession
----@field id integer
 ---@field parent TardisSessionManager
 ---@field augroup integer
 ---@field filename string
@@ -15,26 +14,27 @@ local M = {}
 ---@field adapter TardisAdapter
 M.Session = {}
 
----@param id integer
 ---@param parent TardisSessionManager
 ---@param adapter TardisAdapter?
-function M.Session:new(id, parent, adapter)
+function M.Session:new(parent, adapter)
     local session = {}
     setmetatable(session, self)
     self.__index = self
-    session:init(id, parent, adapter)
+    session:init(parent, adapter)
 
     return session
 end
 
 ---@param revision string
-function M.Session:create_buffer(revision)
+function M.Session:create_buffer(index)
     local fd = vim.api.nvim_create_buf(false, true)
+    local revision = self.log[index]
     local file_at_revision = self.adapter.get_file_at_revision(revision, self)
 
     vim.api.nvim_buf_set_lines(fd, 0, -1, false, file_at_revision)
     vim.api.nvim_set_option_value('filetype', self.filetype, { buf = fd })
     vim.api.nvim_set_option_value('readonly', true, { buf = fd })
+    vim.api.nvim_buf_set_name(fd, string.format('%s (%s)', self.filename, revision))
 
     local keymap = self.parent.config.keymap
     vim.keymap.set('n', keymap.next, function() self:next_buffer() end, { buffer = fd })
@@ -43,7 +43,7 @@ function M.Session:create_buffer(revision)
     vim.keymap.set('n', keymap.revision_message, function() self:create_info_buffer(revision) end, { buffer = fd })
     vim.keymap.set('n', keymap.commit, function() self:commit_to_origin() end, { buffer = fd })
 
-    return fd
+    return buffer.Buffer:new(fd)
 end
 
 function M.Session:create_info_buffer(revision)
@@ -72,10 +72,9 @@ function M.Session:create_info_buffer(revision)
     })
 end
 
----@param id integer
 ---@param parent TardisSessionManager
 ---@param adapter_type string
-function M.Session:init(id, parent, adapter_type)
+function M.Session:init(parent, adapter_type)
     local adapter = adapters.get_adapter(adapter_type)
     if not adapter then
         return
@@ -85,24 +84,16 @@ function M.Session:init(id, parent, adapter_type)
     self.filetype = vim.api.nvim_get_option_value('filetype', { buf = 0 })
     self.filename = vim.api.nvim_buf_get_name(0)
     self.origin = vim.api.nvim_get_current_buf()
-    self.id = id
     self.parent = parent
     self.path = vim.fn.expand('%:p')
     self.buffers = {}
+    self.log = self.adapter.get_revisions_for_current_file(self)
 
-    local log = self.adapter.get_revisions_for_current_file(self)
-    if vim.tbl_isempty(log) then
+    if vim.tbl_isempty(self.log) then
         vim.notify('No previous revisions of this file were found', vim.log.levels.WARN)
         return
     end
 
-    for i, revision in ipairs(log) do
-        local fd = nil
-        if i < parent.config.settings.initial_revisions then
-            fd = self:create_buffer(revision)
-        end
-        table.insert(self.buffers, buffer.Buffer:new(self.filename, revision, fd))
-    end
     parent:on_session_opened(self)
 end
 
@@ -122,23 +113,27 @@ end
 
 ---@param index integer
 function M.Session:goto_buffer(index)
-    local buf = self.buffers[index]
-    if not buf then
-        return
+    if index < 1 or index >= #self.log then
+        return false
     end
-    if not buf.fd then
-        buf.fd = self:create_buffer(buf.revision)
+    if not self.buffers[index] then
+        self.buffers[index] = self:create_buffer(index)
     end
-    buf:focus()
+    self.buffers[index]:focus()
     self.curret_buffer_index = index
+    return true
 end
 
 function M.Session:next_buffer()
-    self:goto_buffer(self.curret_buffer_index + 1)
+    if not self:goto_buffer(self.curret_buffer_index + 1) then
+        vim.notify('No earlier revisions of file')
+    end
 end
 
 function M.Session:prev_buffer()
-    self:goto_buffer(self.curret_buffer_index - 1)
+    if not self:goto_buffer(self.curret_buffer_index - 1) then
+        vim.notify('No earlier revisions of file')
+    end
 end
 
 function M.Session:commit_to_origin()

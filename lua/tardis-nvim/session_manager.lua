@@ -24,26 +24,23 @@ function M.SessionManager:new(config)
 end
 
 function M.SessionManager:create_session(args)
-    for _, session in ipairs(self.sessions) do
-        if session.filename == vim.api.nvim_buf_get_name(0) then
-            session:goto_buffer(1)
-        end
+    local filename = vim.api.nvim_buf_get_name(0)
+    if self.sessions[filename] then
+        self.sessions[filename]:goto_buffer(1)
         return
     end
-    local session = ses.Session:new(self.next, self, args)
-    self.next = self.next + 1
+    local session = ses.Session:new(self, args)
     session:goto_buffer(1)
-    table.insert(self.sessions, session)
 end
 
 ---@param session TardisSession
 function M.SessionManager:on_session_opened(session)
-    table.insert(self.sessions, session.id, session)
+    self.sessions[session.filename] = session
 end
 
 ---@param session TardisSession
 function M.SessionManager:on_session_closed(session)
-    table.remove(self.sessions, session.id)
+    self.sessions[session.filename] = nil
 end
 
 return M
