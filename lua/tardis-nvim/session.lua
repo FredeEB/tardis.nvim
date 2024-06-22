@@ -132,7 +132,7 @@ end
 
 function M.Session:prev_buffer()
     if not self:goto_buffer(self.curret_buffer_index - 1) then
-        vim.notify('No earlier revisions of file')
+        vim.notify('No later revisions of file')
     end
 end
 
